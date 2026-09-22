@@ -2,7 +2,7 @@
 
 **一行文字，一个新名字。** 粘贴几行文字，拖入几个文件，按行对应批量重命名。
 
-Rust + Tauri 2 编写的 Windows 桌面小工具：左边粘贴名称，每行一个；右边排列文件，实时预览对应关系，确认后一次完成重命名。只改文件名，内容与所在文件夹不变，不生成副本。整个应用是一个约 4.6MB 的 EXE，免安装、无框架依赖（Windows 11 自带 WebView2）。
+Rust + Tauri 2 编写的 Windows 桌面小工具：左边粘贴名称，每行一个；右边排列文件，实时预览对应关系，确认后一次完成重命名。只改文件名，内容与所在文件夹不变，不生成副本。整个应用是一个约 4.7MB 的 EXE，免安装、无框架依赖（Windows 11 自带 WebView2）。
 
 ![界面截图](docs/screenshot.png)
 
@@ -12,7 +12,7 @@ Rust + Tauri 2 编写的 Windows 桌面小工具：左边粘贴名称，每行�
 
 | 文件 | 体积 | 运行要求 |
 |---|---|---|
-| `LineRename.exe` | 约 4.6MB | Windows 11 开箱即用；Windows 10 需安装 [WebView2 运行时](https://developer.microsoft.com/microsoft-edge/webview2/) |
+| `LineRename.exe` | 约 4.7MB | Windows 11 开箱即用；Windows 10 需安装 [WebView2 运行时](https://developer.microsoft.com/microsoft-edge/webview2/) |
 
 > Release 页面上的 v1.x（WinUI 3 版，约 90MB）为历史版本，v2.0 起改用 Tauri + Rust，体积缩小至约二十分之一。
 
@@ -39,7 +39,7 @@ Rust + Tauri 2 编写的 Windows 桌面小工具：左边粘贴名称，每行�
 ```powershell
 .\Build.ps1        # 构建 release：src-tauri\target\release\LineRename.exe
 
-# 运行单元测试（25 项）
+# 运行单元测试（26 项）
 cargo test --manifest-path src-tauri\Cargo.toml
 
 # 界面冒烟测试（真实窗口 + WebView2 CDP 驱动，在隔离临时目录中运行）
