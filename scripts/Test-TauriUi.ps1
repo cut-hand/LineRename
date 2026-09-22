@@ -90,12 +90,23 @@ try {
     if (($rowText -split '\|').Count -ne 3) { throw ('应为 3 行: ' + $rowText) }
     Write-Output ('PASS 添加文件 + 自然序预览: ' + $rowText)
 
-    # 2.5) 排序按钮反馈：乱序添加已被自动排序，此时应提示已是自然顺序
+    # 2.5) 排序按钮反馈与倒序切换
     [void](Eval 'document.getElementById("btnSort").click(); "clicked"')
     Start-Sleep -Milliseconds 400
     $sortStatus = Eval 'document.getElementById("status").textContent'
     if ($sortStatus -ne '已是自然顺序') { throw ('排序反馈异常: ' + $sortStatus) }
-    Write-Output 'PASS 排序按钮反馈（已是自然顺序）'
+    [void](Eval 'document.getElementById("btnSort").click(); "clicked"')
+    Start-Sleep -Milliseconds 400
+    $descRows = Eval 'Array.from(document.querySelectorAll("#rows tr td:nth-child(2)")).map(td => td.textContent).join("|")'
+    if ($descRows -ne '10.txt|2.txt|1.txt') { throw ('倒序排列异常: ' + $descRows) }
+    $descStatus = Eval 'document.getElementById("status").textContent'
+    if ($descStatus -notmatch '倒序重排') { throw ('倒序反馈异常: ' + $descStatus) }
+    $btnText = Eval 'document.getElementById("btnSort").textContent'
+    if ($btnText -ne '排序 ↑') { throw ('按钮方向标记异常: ' + $btnText) }
+    # 恢复正序，继续后续断言
+    [void](Eval 'document.getElementById("btnSort").click(); "clicked"')
+    Start-Sleep -Milliseconds 400
+    Write-Output 'PASS 排序按钮反馈 + 倒序切换'
 
     # 截图（经 CDP 捕获 WebView2 实际渲染内容；PrintWindow 截不到 WebView2 表面）
     $shot = Send-Cdp 'Page.captureScreenshot' @{ format = 'png' }

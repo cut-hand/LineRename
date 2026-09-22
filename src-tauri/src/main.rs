@@ -43,6 +43,7 @@ struct RenameOutcome {
 struct SortOutcome {
     changed: usize,
     total: usize,
+    descending: bool,
 }
 
 fn ext_of(path: &Path) -> String {
@@ -286,16 +287,19 @@ fn add_paths(state: State<AppState>, paths: Vec<String>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn sort_items(state: State<AppState>) -> Result<SortOutcome, String> {
+fn sort_items(state: State<AppState>, descending: bool) -> Result<SortOutcome, String> {
     let mut items = state.items.lock().map_err(|e| e.to_string())?;
     let before: Vec<PathBuf> = items.iter().map(|i| i.source_path.clone()).collect();
-    items.sort_by(|a, b| natural_cmp(&a.file_name, &b.file_name));
+    items.sort_by(|a, b| {
+        let ord = natural_cmp(&a.file_name, &b.file_name);
+        if descending { ord.reverse() } else { ord }
+    });
     let changed = items
         .iter()
         .zip(&before)
         .filter(|(a, b)| a.source_path != **b)
         .count();
-    Ok(SortOutcome { changed, total: items.len() })
+    Ok(SortOutcome { changed, total: items.len(), descending })
 }
 
 #[tauri::command]
