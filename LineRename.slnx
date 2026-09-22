@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/LineRename.App/LineRename.App.csproj" />
-    <Project Path="src/LineRename.Core/LineRename.Core.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/LineRename.Tests/LineRename.Tests.csproj" />
-  </Folder>
-</Solution>

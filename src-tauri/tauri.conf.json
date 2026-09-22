@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "LineRename",
+  "version": "2.0.0",
+  "identifier": "com.linerename.app",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "行序 · LineRename",
+        "width": 980,
+        "height": 640,
+        "minWidth": 760,
+        "minHeight": 480
+      }
+    ]
+  },
+  "bundle": {
+    "active": false,
+    "icon": []
+  }
+}

@@ -1,8 +1,7 @@
 .tools/
-**/bin/
-**/obj/
 artifacts/
-scripts/dotnet-install.ps1
+target/
+src-tauri/gen/schemas/
 .vs/
 *.user
 .env
