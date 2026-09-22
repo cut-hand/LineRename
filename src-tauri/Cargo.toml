@@ -1,6 +1,6 @@
 [package]
 name = "LineRename"
-version = "2.0.0"
+version = "2.0.1"
 description = "行序 · LineRename — 安全的行式批量重命名"
 edition = "2021"
 
