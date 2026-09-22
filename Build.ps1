@@ -1,4 +1,7 @@
-param([switch]$SingleFile)
+param(
+    [ValidateSet('All', 'SingleFile', 'FrameworkDependent', 'Folder')]
+    [string]$Target = 'All'
+)
 $ErrorActionPreference = 'Stop'
 $dotnet = Join-Path $PSScriptRoot '.tools\dotnet\dotnet.exe'
 if (-not (Test-Path $dotnet)) {
@@ -15,18 +18,30 @@ Push-Location $PSScriptRoot
 try {
     & $dotnet run --project 'tests\LineRename.Tests\LineRename.Tests.csproj' -c Release
     if ($LASTEXITCODE -ne 0) { throw 'Tests failed. Publishing stopped.' }
-    if ($SingleFile) {
-        & $dotnet publish 'src\LineRename.App\LineRename.App.csproj' -c Release -p:Platform=x64 -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o 'artifacts\SingleFile'
-    }
-    else {
-        & $dotnet publish 'src\LineRename.App\LineRename.App.csproj' -c Release -p:Platform=x64 -p:PublishSingleFile=false -o 'artifacts\LineRename'
-    }
-    if ($LASTEXITCODE -ne 0) { throw 'Publishing failed.' }
-    if ($SingleFile) {
+
+    $app = 'src\LineRename.App\LineRename.App.csproj'
+    $singleFileArgs = @('-c', 'Release', '-p:Platform=x64', '-p:PublishSingleFile=true', '-p:DebugType=None', '-p:DebugSymbols=false')
+
+    if ($Target -in 'All', 'SingleFile') {
+        & $dotnet publish $app @singleFileArgs -o 'artifacts\SingleFile'
+        if ($LASTEXITCODE -ne 0) { throw 'Publishing failed (self-contained single file).' }
         Write-Host "Ready: $PSScriptRoot\artifacts\SingleFile\LineRename.exe"
-        Write-Host 'Distribute only this EXE. Runtime files are extracted automatically on launch.'
+        Write-Host 'Self-contained: no runtime required. Distribute only this EXE.'
     }
-    else {
+
+    if ($Target -in 'All', 'FrameworkDependent') {
+        & $dotnet publish $app -c Release -p:Platform=x64 -p:PublishSingleFile=false '-p:SelfContained=false' '-p:WindowsAppSDKSelfContained=false' -o 'artifacts\LineRename-FrameworkDependent'
+        if ($LASTEXITCODE -ne 0) { throw 'Publishing failed (framework-dependent folder).' }
+        $zip = Join-Path $PSScriptRoot 'artifacts\LineRename-FrameworkDependent.zip'
+        if (Test-Path $zip) { Remove-Item $zip -Force }
+        Compress-Archive -Path (Join-Path $PSScriptRoot 'artifacts\LineRename-FrameworkDependent') -DestinationPath $zip -CompressionLevel Optimal
+        Write-Host "Ready: $zip"
+        Write-Host 'Framework-dependent: small download, but requires .NET 10 Desktop Runtime and Windows App SDK runtime on the target machine.'
+    }
+
+    if ($Target -in 'All', 'Folder') {
+        & $dotnet publish $app -c Release -p:Platform=x64 -p:PublishSingleFile=false -o 'artifacts\LineRename'
+        if ($LASTEXITCODE -ne 0) { throw 'Publishing failed (folder layout).' }
         Write-Host "Ready: $PSScriptRoot\artifacts\LineRename\LineRename.exe"
         Write-Host 'Copy the entire LineRename output folder when moving the app.'
     }

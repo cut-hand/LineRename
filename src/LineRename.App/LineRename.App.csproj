@@ -39,4 +39,11 @@
                              CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
+  <!-- Framework-dependent publishes must not ship the Windows AI native payload
+       (onnxruntime/DirectML); the WASDK suppression targets don't cover it. -->
+  <Target Name="StripUnusedWindowsAIPayload" AfterTargets="ComputeFilesToPublish" Condition="'$(WindowsAppSDKSelfContained)' != 'true' and '$(PublishSingleFile)' != 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.NuGetPackageId)' == 'Microsoft.Windows.AI.MachineLearning' or '%(ResolvedFileToPublish.NuGetPackageId)' == 'Microsoft.WindowsAppSDK.AI'" />
+    </ItemGroup>
+  </Target>
 </Project>
