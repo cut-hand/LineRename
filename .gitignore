@@ -1,0 +1,11 @@
+.tools/
+**/bin/
+**/obj/
+artifacts/
+scripts/dotnet-install.ps1
+.vs/
+*.user
+.env
+.env.*
+*.pfx
+*.p12
