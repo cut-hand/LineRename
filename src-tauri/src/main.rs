@@ -1,5 +1,7 @@
 //! 行序 · LineRename — Tauri 版入口。
 //! 纯逻辑在 core，执行器在 executor；本文件只做状态管理与命令桥接。
+// release 构建隐藏控制台窗口（debug 保留，便于看日志）
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod core;
 mod executor;
@@ -34,6 +36,13 @@ struct RowDto {
 struct RenameOutcome {
     moved: usize,
     skipped: Vec<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SortOutcome {
+    changed: usize,
+    total: usize,
 }
 
 fn ext_of(path: &Path) -> String {
@@ -235,9 +244,24 @@ fn pick_files() -> Vec<String> {
         .collect()
 }
 
+/// 列表本为自然序（或为空）时整体重排；已被手动调整过时，新文件按自然序追加到末尾。
+fn add_and_merge(items: &mut Vec<RenameItem>, added: Vec<RenameItem>) {
+    let natural = items
+        .windows(2)
+        .all(|w| natural_cmp(&w[0].file_name, &w[1].file_name) != std::cmp::Ordering::Greater);
+    let old_len = items.len();
+    items.extend(added);
+    if natural {
+        items.sort_by(|a, b| natural_cmp(&a.file_name, &b.file_name));
+    } else {
+        items[old_len..].sort_by(|a, b| natural_cmp(&a.file_name, &b.file_name));
+    }
+}
+
 #[tauri::command]
 fn add_paths(state: State<AppState>, paths: Vec<String>) -> Result<(), String> {
     let mut items = state.items.lock().map_err(|e| e.to_string())?;
+    let mut added = Vec::new();
     for p in paths {
         let path = PathBuf::from(&p);
         let md = fs::metadata(&path).map_err(|e| format!("无法读取 {}: {e}", path.display()))?;
@@ -250,21 +274,28 @@ fn add_paths(state: State<AppState>, paths: Vec<String>) -> Result<(), String> {
         }
         let is_dir = md.is_dir();
         let extension = if is_dir { String::new() } else { ext_of(&path) };
-        items.push(RenameItem {
+        added.push(RenameItem {
             source_path: path,
             file_name,
             extension,
             is_dir,
         });
     }
+    add_and_merge(&mut items, added);
     Ok(())
 }
 
 #[tauri::command]
-fn sort_items(state: State<AppState>) -> Result<(), String> {
+fn sort_items(state: State<AppState>) -> Result<SortOutcome, String> {
     let mut items = state.items.lock().map_err(|e| e.to_string())?;
+    let before: Vec<PathBuf> = items.iter().map(|i| i.source_path.clone()).collect();
     items.sort_by(|a, b| natural_cmp(&a.file_name, &b.file_name));
-    Ok(())
+    let changed = items
+        .iter()
+        .zip(&before)
+        .filter(|(a, b)| a.source_path != **b)
+        .count();
+    Ok(SortOutcome { changed, total: items.len() })
 }
 
 #[tauri::command]
@@ -359,6 +390,32 @@ fn main() {
 mod tests {
     use super::*;
     use std::cmp::Ordering;
+
+    #[test]
+    fn add_and_merge_sorts_when_natural_and_appends_when_manual() {
+        let mk = |n: &str| RenameItem {
+            source_path: PathBuf::from(n),
+            file_name: n.to_string(),
+            extension: String::new(),
+            is_dir: false,
+        };
+        // 空列表：添加后整体自然排序
+        let mut items: Vec<RenameItem> = Vec::new();
+        add_and_merge(&mut items, vec![mk("10.txt"), mk("2.txt"), mk("1.txt")]);
+        let names: Vec<&str> = items.iter().map(|i| i.file_name.as_str()).collect();
+        assert_eq!(names, vec!["1.txt", "2.txt", "10.txt"]);
+
+        // 自然序列表：新文件合入后整体保持自然序
+        add_and_merge(&mut items, vec![mk("9.txt")]);
+        let names: Vec<&str> = items.iter().map(|i| i.file_name.as_str()).collect();
+        assert_eq!(names, vec!["1.txt", "2.txt", "9.txt", "10.txt"]);
+
+        // 手动顺序（非自然序）：保留原顺序，新文件按自然序追加尾部
+        let mut manual = vec![mk("b.txt"), mk("a.txt")];
+        add_and_merge(&mut manual, vec![mk("z.txt"), mk("10.txt"), mk("2.txt")]);
+        let names: Vec<&str> = manual.iter().map(|i| i.file_name.as_str()).collect();
+        assert_eq!(names, vec!["b.txt", "a.txt", "2.txt", "10.txt", "z.txt"]);
+    }
 
     #[test]
     fn natural_sort_orders_digit_runs() {

@@ -62,6 +62,16 @@
     display: flex; align-items: center; gap: 10px; padding: 8px 14px 12px;
   }
   #status { flex: 1; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.dragging::after {
+    content: "松开鼠标，添加到列表";
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(79, 140, 255, .14);
+    border: 2px dashed var(--accent);
+    border-radius: 8px;
+    color: var(--accent); font-size: 15px;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -155,7 +165,7 @@ $('btnAdd').onclick = async () => {
   } catch (e) { setStatus(String(e)); }
   setBusy(false);
 };
-$('btnSort').onclick = async () => { setBusy(true); try { await invoke('sort_items'); await refresh(); } catch (e) { setStatus(String(e)); } setBusy(false); };
+$('btnSort').onclick = async () => { setBusy(true); try { const out = await invoke('sort_items'); setStatus(out.changed ? `已按自然顺序重排（${out.changed} 项变动）` : '已是自然顺序'); await refresh(); } catch (e) { setStatus(String(e)); } setBusy(false); };
 $('btnUp').onclick = async () => { if (selected < 0) return; setBusy(true); try { await invoke('move_item', { index: selected, delta: -1 }); selected -= 1; await refresh(); } catch (e) { setStatus(String(e)); } setBusy(false); };
 $('btnDown').onclick = async () => { if (selected < 0) return; setBusy(true); try { await invoke('move_item', { index: selected, delta: 1 }); selected += 1; await refresh(); } catch (e) { setStatus(String(e)); } setBusy(false); };
 $('btnClear').onclick = async () => { setBusy(true); try { await invoke('clear_items'); selected = -1; await refresh(); } catch (e) { setStatus(String(e)); } setBusy(false); };
@@ -184,7 +194,9 @@ $('btnUndo').onclick = async () => {
 };
 
 window.__TAURI__.webviewWindow.getCurrentWebviewWindow().onDragDropEvent(e => {
-  if (e.payload.type === 'drop' && e.payload.paths && e.payload.paths.length) {
+  const t = e.payload.type;
+  document.body.classList.toggle('dragging', t === 'enter' || t === 'over');
+  if (t === 'drop' && e.payload.paths && e.payload.paths.length) {
     invoke('add_paths', { paths: e.payload.paths })
       .then(refresh)
       .catch(err => setStatus(String(err)));

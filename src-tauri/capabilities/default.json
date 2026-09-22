@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "主窗口默认能力：事件监听（拖放必需）",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}
