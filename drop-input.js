@@ -14,12 +14,14 @@ function installFileDrop({zone,isBusy,accept,message}) {
       paths.push(path);
     }
     await accept(root,paths,handles);
-    pending=null;button.hidden=true;hint.textContent='拖入文件或文件夹 · 不会上传文件';
+    pending=null;button.hidden=false;button.textContent='选择文件夹';hint.textContent='拖入文件或文件夹 · 不会上传文件';
   }
   async function authorize(){
-    if(!pending||blocked())return;
+    if(blocked())return;
     working=true;button.disabled=true;
     try{
+      if(!window.showDirectoryPicker){message('请使用新版 Chrome 或 Edge 打开工具。');return;}
+      if(!pending){const root=await showDirectoryPicker({mode:'readwrite'});await deliver(root,[root]);return;}
       const handles=pending;
       if(handles.length===1&&handles[0].kind==='directory'){
         const root=handles[0];
@@ -30,10 +32,10 @@ function installFileDrop({zone,isBusy,accept,message}) {
         const root=await showDirectoryPicker({mode:'readwrite'});
         await deliver(root,handles);
       }
-    }catch(e){message(e.name==='AbortError'?'已取消授权，拖入项目仍保留，可点击按钮重试。':e.message);}
+    }catch(e){message(e.name==='AbortError'?(pending?'已取消授权，拖入项目仍保留，可点击按钮重试。':'已取消选择，没有添加文件。'):e.message);}
     finally{working=false;button.disabled=false;}
   }
-  button.onclick=authorize;
+  button.hidden=false;button.textContent='选择文件夹';button.onclick=authorize;
   const hasFiles=e=>Array.from(e.dataTransfer?.types||[]).includes('Files');
   document.addEventListener('dragenter',e=>{if(hasFiles(e)){e.preventDefault();depth++;zone.classList.add('drag-active');}});
   document.addEventListener('dragover',e=>{if(hasFiles(e)){e.preventDefault();e.dataTransfer.dropEffect=blocked()?'none':'copy';}});
