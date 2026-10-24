@@ -56,7 +56,7 @@ $('run').onclick=async()=>{
  if(!confirm(`将重命名 ${active.length} 个文件，跳过 ${rows.length-active.length} 个。浏览器版保留恢复备份，需要额外磁盘空间。执行期间请勿编辑文件或关闭页面。继续？`))return;
  busy=true;controls();
  try{undo=await C.execute(root,rows,say);const targetNames=rows.map(r=>r.reason?r.source:r.target);await reloadItems(targetNames);say(`已完成 ${active.length} 个文件。备份：${undo.tx.backupName}。可点击“撤销上次”。`);}
- catch(e){say('操作停止：'+e.message);if(e.transaction){undo=e.transaction;try{await C.restore(undo,say);undo=null;await scan();say('执行失败，已恢复原文件名；恢复备份仍保留。原因：'+e.message);}catch(restoreError){say('执行及自动恢复未完成：'+restoreError.message+'\n备份目录：'+undo.tx.backupName+'。请保留备份并按 journal.json 检查文件。');}}}
+ catch(e){say('操作停止：'+e.message);if(e.transaction){undo=e.transaction;try{await C.restore(undo,say);undo=null;await reloadItems(items.map(i=>i.name));say('执行失败，已恢复原文件名；恢复备份仍保留。原因：'+e.message);}catch(restoreError){say('执行及自动恢复未完成：'+restoreError.message+'\n备份目录：'+undo.tx.backupName+'。请保留备份并按 journal.json 检查文件。');}}}
  finally{busy=false;refresh();}
 };
 $('undo').onclick=async()=>{if(!undo||busy)return;busy=true;controls();try{const names=undo.tx.records.map(r=>r.source);await C.restore(undo,say);undo=null;await reloadItems(names);say('已恢复原文件名。恢复备份目录仍保留，确认无误后可自行删除。');}catch(e){say('恢复已停止：'+e.message+'。备份仍保留。');}finally{busy=false;refresh();}};
