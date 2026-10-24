@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>行序 · LineRename</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><div class="brand"><span class="logo">行</span><div><strong>行序</strong><small>LineRename · 浏览器版</small></div></div><span class="badge">● 本地处理 · 无需上传</span></header>
+<div class="hero"><span>ONE LINE. ONE NAME.</span><h1>一行文字，一个新名字。</h1><p>粘贴名称，排列文件。每一行，都对应得清清楚楚。</p></div>
+<div class="source glass"><div><small>当前文件夹</small><strong id="folder">尚未选择文件夹</strong></div><button id="choose" class="primary">选择文件夹</button></div>
+<div class="workspace">
+<section class="names glass"><div class="section-title"><div><small>01 / 输入名称</small><h2>名称列表</h2></div><span id="nameCount">0 行</span></div><p>每行一个新名称，空行自动忽略。</p><textarea id="names" spellcheck="false" placeholder="大阪的第一天&#10;街角的咖啡店&#10;夜色中的道顿堀"></textarea><label class="check"><input id="keepExt" type="checkbox" checked>保留原扩展名</label><small>开启后只输入名称，原来的 .jpg、.mp4 等后缀会自动追加。</small></section>
+<section class="preview"><div class="section-title"><div><small>02 / 核对对应关系</small><h2>重命名预览</h2></div><span class="badge">预览不会修改文件</span></div>
+<div class="metrics"><div><strong id="fileCount">0</strong><span>已选择文件</span></div><div><strong id="readyCount">0</strong><span>可执行</span></div><div><strong id="skipCount">0</strong><span>跳过 / 未变化</span></div></div>
+<div class="toolbar"><button id="pick">选择文件</button><button id="sort">自然排序 ↑</button><button id="up" aria-label="上移选中文件">↑ 上移</button><button id="down" aria-label="下移选中文件">↓ 下移</button><button id="clear">清空列表</button></div>
+<div class="table-wrap"><table><thead><tr><th>顺序</th><th>原文件名</th><th>新文件名</th><th>状态</th></tr></thead><tbody id="rows"></tbody></table><div id="empty">选择文件夹，开始排列你的文件。</div></div>
+<p id="countsHint"></p></section></div>
+<div id="status" role="status" aria-live="polite">请使用 Windows / macOS 的 Chrome 或 Edge。选择文件夹后，再选择需要改名的文件。</div>
+<div class="actionbar glass"><div><strong>核对无误，再一次完成。</strong><small>先备份、再校验。文件保留在原文件夹，新操作前请先处理上次撤销记录。</small></div><div><button id="undo" disabled>撤销上次</button><button id="run" class="primary" disabled>开始重命名</button></div></div>
+<details><summary>浏览器版的文件操作与恢复说明</summary><p>只处理所选文件夹最外层的文件，不递归处理子文件夹。浏览器版通过备份、校验、复制与删除完成改名，可能改变修改日期及其他文件元数据，需要额外磁盘空间；大文件 SHA-256 校验也会占用内存。</p><p>每次执行在原文件夹保留 .linerename-backup- 开头的恢复目录（含原文件副本与 journal.json）。确认不再需要恢复后，你可自行删除备份。执行时请勿关闭页面、编辑或同步正在处理的文件。操作失败会尝试恢复原名；恢复受阻时保留备份供手动恢复。</p><p>关闭页面后，可点下方“从备份恢复”，选择同一原文件夹内的备份记录。只对未被更改的文件自动撤销，不会覆盖占用的原名称。</p><button id="recover">从备份恢复…</button></details>
+<footer><a href="https://github.com/cut-hand/LineRename" target="_blank" rel="noopener">GitHub 项目</a> · <a href="https://cut-hand.github.io/SmileFile/" target="_blank" rel="noopener">拾序文件整理</a> · 文件内容不上传</footer>
+</main>
+<dialog id="picker"><div class="section-title"><h2>选择要改名的文件</h2><button id="closePicker">取消</button></div><div class="picker-tools"><input id="search" type="search" placeholder="搜索文件名"><button id="selectAll">选中当前结果</button><button id="selectNone">全部取消</button></div><div id="fileOptions"></div><button id="confirmPick" class="primary">使用所选文件</button></dialog>
+<dialog id="recovery"><div class="section-title"><h2>从备份恢复</h2><button id="closeRecovery">关闭</button></div><p>恢复当前所选文件夹中的历史记录。请先备份你后来编辑过的文件。</p><div id="backupOptions"></div></dialog>
+<script src="core.js"></script><script src="app.js"></script></body></html>
