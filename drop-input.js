@@ -44,7 +44,7 @@ function installFileDrop({zone,isBusy,accept,message}) {
     // Capture all handle promises before leaving the drop event's synchronous turn.
     const dropped=Array.from(e.dataTransfer.items).filter(i=>i.kind==='file');
     if(!dropped.length)return;
-    if(dropped.some(i=>!i.getAsFileSystemHandle)){message('当前浏览器不支持拖拽读写，请使用新版 Chrome 或 Edge，或点击选择文件夹。');return;}
+    if(dropped.some(i=>!i.getAsFileSystemHandle)){message('当前浏览器不支持拖拽读写，请使用新版 Chrome 或 Edge。');return;}
     const promises=dropped.map(i=>i.getAsFileSystemHandle());
     working=true;
     try{
