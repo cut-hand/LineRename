@@ -78,3 +78,16 @@ $('recover').onclick=async()=>{
 $('closeRecovery').onclick=()=>$('recovery').close();
 window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});
 refresh();if(!window.showDirectoryPicker)say('请使用 Chrome 或 Edge 打开此工具，当前浏览器不支持文件夹读写。');
+
+installFileDrop({zone:$('dropZone'),isBusy:()=>busy||!!undo,message:say,accept:async(dir,paths)=>{
+ // Rename operations currently share one parent folder, matching file-picker behavior.
+ if(paths.some(p=>p.length>1)||paths.some(p=>p.length===1&&paths.some(q=>q.length>1)))throw Error('行序一次处理同一文件夹中的文件。请直接拖入该文件夹，或其中的多个文件。');
+ if(paths.some(p=>p.length===1)&&!paths.some(p=>!p.length)){
+  for(const path of paths){const h=await dir.getFileHandle(path[0]).catch(()=>null);if(!h)throw Error('请一次拖入一个文件夹，或同一文件夹中的多个文件。');}
+ }
+ const same=root&&await root.isSameEntry(dir);root=dir;await scan();
+ const wanted=paths.some(p=>!p.length)?available:available.filter(f=>paths.some(p=>p[0]===f.name));
+ const kept=same?items:[];const added=[];
+ for(const f of wanted){let found=false;for(const old of kept)if(await old.handle.isSameEntry(f.handle)){found=true;break;}if(!found)added.push(f);}
+ items=kept.concat(added);if(!same)manualOrder=false;if(!manualOrder)items.sort((a,b)=>C.natural(a.name,b.name));selected=-1;$('folder').textContent=root.name;refresh();say('已添加 '+added.length+' 个文件（自动忽略重复添加）。目录只读取最外层文件。');
+}});
