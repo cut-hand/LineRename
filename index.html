@@ -4,7 +4,7 @@
 <header><div class="brand"><span class="logo">行</span><div><strong>行序</strong><small>LineRename · 浏览器版</small></div></div><span class="badge">● 本地处理 · 无需上传</span></header>
 <div class="hero"><span>ONE LINE. ONE NAME.</span><h1>一行文字，一个新名字。</h1><p>粘贴名称，排列文件。每一行，都对应得清清楚楚。</p></div>
 <div class="source glass"><div><small>当前文件夹</small><strong id="folder">尚未选择文件夹</strong></div><button id="choose" class="primary">选择文件夹</button></div>
-<div class="workspace">
+<div id="dropZone" class="drop-zone"><strong>拖入文件或文件夹</strong><span data-drop-hint>拖入文件或文件夹 · 不会上传文件</span><button type="button" hidden>授权并添加</button></div><div class="workspace">
 <section class="names glass"><div class="section-title"><div><small>01 / 输入名称</small><h2>名称列表</h2></div><span id="nameCount">0 行</span></div><p>每行一个新名称，空行自动忽略。</p><textarea id="names" spellcheck="false" placeholder="大阪的第一天&#10;街角的咖啡店&#10;夜色中的道顿堀"></textarea><label class="check"><input id="keepExt" type="checkbox" checked>保留原扩展名</label><small>开启后只输入名称，原来的 .jpg、.mp4 等后缀会自动追加。</small></section>
 <section class="preview"><div class="section-title"><div><small>02 / 核对对应关系</small><h2>重命名预览</h2></div><span class="badge">预览不会修改文件</span></div>
 <div class="metrics"><div><strong id="fileCount">0</strong><span>已选择文件</span></div><div><strong id="readyCount">0</strong><span>可执行</span></div><div><strong id="skipCount">0</strong><span>跳过 / 未变化</span></div></div>
@@ -18,4 +18,4 @@
 </main>
 <dialog id="picker"><div class="section-title"><h2>选择要改名的文件</h2><button id="closePicker">取消</button></div><div class="picker-tools"><input id="search" type="search" placeholder="搜索文件名"><button id="selectAll">选中当前结果</button><button id="selectNone">全部取消</button></div><div id="fileOptions"></div><button id="confirmPick" class="primary">使用所选文件</button></dialog>
 <dialog id="recovery"><div class="section-title"><h2>从备份恢复</h2><button id="closeRecovery">关闭</button></div><p>恢复当前所选文件夹中的历史记录。请先备份你后来编辑过的文件。</p><div id="backupOptions"></div></dialog>
-<script src="core.js"></script><script src="app.js"></script></body></html>
+<script src="core.js"></script><script src="drop-input.js"></script><script src="app.js"></script></body></html>
