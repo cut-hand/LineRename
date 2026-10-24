@@ -4,7 +4,7 @@ let root=null,available=[],items=[],occupants=new Map(),rows=[],selected=-1,busy
 const say=text=>{$('status').textContent=text;};
 function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function controls(){
- for(const id of ['choose','pick','sort','up','down','clear','names','keepExt','recover'])$(id).disabled=busy;
+ for(const id of ['pick','sort','up','down','clear','names','keepExt','recover'])$(id).disabled=busy;
  $('pick').disabled=busy||!root;$('recover').disabled=busy||!root;
  $('up').disabled=busy||selected<=0;$('down').disabled=busy||selected<0||selected>=items.length-1;
  $('run').disabled=busy||!rows.some(r=>!r.reason)||!!undo;
@@ -30,13 +30,6 @@ function renderPicker(){
  $('confirmPick').textContent='使用所选文件（'+picked.size+'）';
 }
 function openPicker(){picked=new Set(items.map(i=>i.name));$('search').value='';renderPicker();$('picker').showModal();}
-$('choose').onclick=async()=>{
- if(!window.showDirectoryPicker){say('当前浏览器不支持文件夹读写，请使用 Chrome 或 Edge。');return;}
- if(undo){say('请先撤销上次操作或刷新页面。备份目录可供稍后恢复。');return;}
- busy=true;controls();say('等待文件夹选择和读写授权…');
- try{const dir=await showDirectoryPicker({mode:'readwrite'});root=dir;items=[];selected=-1;manualOrder=false;await scan();$('folder').textContent=root.name;say(`已找到 ${available.length} 个文件，请选择需要改名的文件。`);openPicker();}
- catch(e){say(e.name==='AbortError'?'已取消选择，没有修改文件。':'选择失败：'+e.message);}finally{busy=false;refresh();}
-};
 $('pick').onclick=async()=>{busy=true;controls();try{await scan();openPicker();}catch(e){say('读取文件夹失败：'+e.message);}finally{busy=false;controls();}};
 $('closePicker').onclick=()=>$('picker').close();$('search').oninput=renderPicker;
 $('selectAll').onclick=()=>{const q=$('search').value.toLowerCase();for(const f of available)if(f.name.toLowerCase().includes(q))picked.add(f.name);renderPicker();};
